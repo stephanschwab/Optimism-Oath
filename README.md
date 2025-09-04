@@ -46,6 +46,15 @@ event OathSigned(address indexed signer, string message, uint256 timestamp);
 • Anyone can sign.
  • Last oath per address is stored onchain.
 
+---
+
+## 📸 Screenshot
+
+Here is how the Optimism Oath page looks on GitHub Pages:
+
+![Optimism Oath](assets/OP-Oath.png)
+
+
 📚 Learn More
 
 Explore the broader ecosystem of Optimism public goods —
