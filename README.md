@@ -52,7 +52,7 @@ event OathSigned(address indexed signer, string message, uint256 timestamp);
 
 Here is how the Optimism Oath page looks on GitHub Pages:
 
-![Optimism Oath](assets/OP-Oath.png)
+![Optimism Oath](assets/assets/OP-Oath.png)
 
 
 📚 Learn More
