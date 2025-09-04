@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Optimism Oath — Sign Onchain</title>
+  <style>
+    :root { --bg:#fff8f6; --op:#ff0420; --ink:#111; --muted:#555; }
+    body { margin:0; font-family: system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Arial; background:var(--bg); color:var(--ink); }
+    .wrap { max-width: 780px; margin: 32px auto; padding: 0 16px; }
+    .card { background:#fff; border:2px solid var(--op); border-radius:16px; padding:22px; }
+    h1 { margin:0 0 8px; }
+    textarea { width:100%; min-height:120px; padding:12px; border-radius:12px; border:1.5px solid #ddd; font-size:16px; }
+    button { font-size:16px; padding:10px 14px; border-radius:12px; border:2px solid var(--op); background:var(--op); color:#fff; cursor:pointer; }
+    button:disabled { opacity:0.6; cursor:not-allowed; }
+    .row { display:flex; flex-wrap:wrap; gap:10px; align-items:center; }
+    .foot { color:#666; font-size:14px; margin-top:12px; }
+    .ok { color:#0a7a20; font-weight:600; }
+    .err { color:#a10a0a; font-weight:600; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+    .badge { display:inline-block; padding:4px 8px; border:1.5px solid var(--op); border-radius:999px; color:var(--op); background:#fff; font-weight:600; }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <div class="row" style="justify-content: space-between;">
+        <h1>Optimism Oath</h1>
+        <span class="badge">OP Mainnet</span>
+      </div>
+      <p>Sign your commitment to build public goods for Optimism. Your message will be recorded onchain.</p>
+
+      <p class="foot">Contract: <span class="mono">0xC23286738F8D3E41A552c9f6c8D1Ec18A8e35921</span></p>
+
+      <label for="message">Your oath</label>
+      <textarea id="message">I pledge to keep building public goods for Optimism — culture + education + infrastructure.
+Week by week, I will expand this ecosystem. I build for good, and I’m here to stay.</textarea>
+
+      <div class="row" style="margin-top:10px;">
+        <button id="connect">Connect</button>
+        <button id="switch">Switch to Optimism</button>
+        <button id="sign" disabled>Sign Oath</button>
+      </div>
+
+      <div id="status" class="foot"></div>
+      <div id="tx" class="foot mono"></div>
+    </div>
+  </div>
+
+<script>
+(function(){
+  const OP_CHAIN_ID = '0x0a';
+  const CONTRACT_ADDR = '0xC23286738F8D3E41A552c9f6c8D1Ec18A8e35921';
+  const ABI = [
+    "event OathSigned(address indexed signer, string message, uint256 timestamp)",
+    "function signOath(string calldata message) external"
+  ];
+
+  const $ = id => document.getElementById(id);
+  const status = (m,c='') => { const el=$('status'); el.className='foot '+c; el.textContent=m; };
+  const linkTx = (h) => { $('tx').innerHTML = h ? "TX: <a target='_blank' href='https://optimistic.etherscan.io/tx/"+h+"'>"+h+"</a>" : ""; };
+
+  let provider, signer;
+
+  $('connect').onclick = async () => {
+    try {
+      if(!window.ethereum) throw new Error('No wallet found. Install MetaMask/Rabby');
+      provider = new ethers.providers.Web3Provider(window.ethereum);
+      await provider.send('eth_requestAccounts', []);
+      signer = provider.getSigner();
+      const addr = await signer.getAddress();
+      status('Connected: '+addr, 'ok');
+      $('sign').disabled = false;
+    } catch(e) { status(e.message,'err'); }
+  };
+
+  $('switch').onclick = async () => {
+    try {
+      await window.ethereum.request({
+        method:'wallet_switchEthereumChain',
+        params:[{chainId: OP_CHAIN_ID}]
+      });
+      status('Switched to Optimism.','ok');
+    } catch(switchError) {
+      if(switchError.code===4902) {
+        try {
+          await window.ethereum.request({
+            method:'wallet_addEthereumChain',
+            params:[{chainId:OP_CHAIN_ID, chainName:'Optimism', nativeCurrency:{name:'Ether',symbol:'ETH',decimals:18}, rpcUrls:['https://mainnet.optimism.io'], blockExplorerUrls:['https://optimistic.etherscan.io']}]
+          });
+          status('Optimism added. Switch again.','ok');
+        } catch(e) { status(e.message,'err'); }
+      } else { status(switchError.message,'err'); }
+    }
+  };
+
+  $('sign').onclick = async () => {
+    try {
+      if(!signer) throw new Error('Connect your wallet first.');
+      const contract = new ethers.Contract(CONTRACT_ADDR, ABI, signer);
+      const msg = $('message').value.trim();
+      if(!msg) throw new Error('Message is empty.');
+      status('Sending transaction...');
+      const tx = await contract.signOath(msg);
+      status('Waiting for confirmation...');
+      const rcpt = await tx.wait();
+      linkTx(tx.hash);
+      status('Oath signed onchain ✅ Block '+rcpt.blockNumber, 'ok');
+    } catch(e) { status(e.message,'err'); }
+  };
+})();
+</script>
+</body>
+</html>
