@@ -1,5 +1,5 @@
 # 🔴 Optimism Oath — The Public Goods Pledge
-📌 This project is part of the BuildForGood ecosystem — a multi-project public goods initiative for Optimism.  
+📌 **This project is part of the BuildForGood ecosystem — a multi-project public goods initiative for Optimism**.  
 
 
 An onchain pledge for Optimism builders.  
@@ -69,7 +69,7 @@ books, NFTs, bots & more: Build For Good — GitHub (https://github.com/stephans
 MIT — open source, free to use, remix, and build upon.
 
 ## 🌍 BuildForGood Ecosystem  
-This project is part of the BuildForGood Ecosystem for Optimism.  
+**This project is part of the BuildForGood Ecosystem for Optimism**.  
 
 📖 Books & Articles • 🕹 Games • 🖼 NFTs & Memes • 🌍 Onchain Artifacts • 🎥 Media  
 
